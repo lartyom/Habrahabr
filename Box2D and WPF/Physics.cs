@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,14 +9,15 @@ using Box2DX.Dynamics;
 using Box2DX.Common;
 using Box2DX.Collision;
 using System.Windows.Media.Media3D;
+using Box2DX;
 
 namespace Box2D_and_WPF
 {
 	public class Physics
 	{
-		private World world;
+		public World world;
 		private const string PATH_CIRCLE = @"Assets\circle.png"; // Изображение круга
-		private const string PATH_RECT = @"Assets\rect.png"; // Изображение квадрата
+		private const string PATH_RECT = /*@"Assets\rect.png"*/@"Assets\wooden_box.png" ; // Изображение квадрата
 		private Model3DGroup models;
 
 		public Physics(float x, float y, float w, float h, float g_x, float g_y, bool doSleep)
@@ -31,11 +33,15 @@ namespace Box2D_and_WPF
 		{
 			this.models = models;
 		}
+		public void Get(Model3DGroup models)
+		{
+			this.models = models;
+		}
 
-		public MyModel3D AddBox(float x, float y, float w, float h, float density, float friction, float restetution)
+		public MyModel3D AddBox(float x, float y, float w, float h, float density, float friction, float restetution, string texture)
 		{
 			// Создается наша графическая модель
-			MyModel3D model = new MyModel3D(models, x, -y, 0, Environment.CurrentDirectory + "\\" + PATH_RECT, new System.Windows.Size(w, h));
+			MyModel3D model = new MyModel3D(models, x, -y, 0, Environment.CurrentDirectory + "\\" + $@"Assets\{texture}.png"/*PATH_RECT*/, new System.Windows.Size(w, h));
 			// Необходим для установи позиции, поворота, различных состояний и т.д. Советую поюзать свойства этих объектов
 			BodyDef bDef = new BodyDef();
 			bDef.Position.Set(x+w, y+h);
@@ -48,11 +54,14 @@ namespace Box2D_and_WPF
 			pDef.SetAsBox(w / 2, h / 2);
 			// Создание самого тела
 			Body body = world.CreateBody(bDef);
+			//body.ApplyForce(force, body.GetWorldCenter());
 			body.CreateShape(pDef);
 			body.SetMassFromShapes();
 			body.SetUserData(model); // Это отличная функция, она на вход принемает объекты типа object, я ее использовал для того чтобы запихнуть и хранить в ней нашу графическую модель, и в методе step ее доставать и обновлять
+
 			return model;
 		}
+		
 		public MyModel3D AddCircle(float x, float y, float radius, float angle, float density,
 					float friction, float restetution)
 		{
@@ -71,11 +80,32 @@ namespace Box2D_and_WPF
 			Body body = world.CreateBody(bDef);
 			body.CreateShape(pDef);
 			body.SetMassFromShapes();
-
 			body.SetUserData(model);
-
+			
 			return model;
 		}
+		/*public MyModel3D AddVert(float x, float y, Vec2[] vert, float angle, float density,
+			float friction, float restetution)
+		{
+			MyModel3D model = new MyModel3D(models, x, y, 0, Environment.CurrentDirectory + "\\" + PATH_RECT, new System.Windows.Size(w, h)); // Данный метод нужно заменить на рисование многоугольников		
+
+			BodyDef bDef = new BodyDef();
+			bDef.Position.Set(x, y);
+			bDef.Angle = angle;
+
+			PolygonDef pDef = new PolygonDef();
+			pDef.Restitution = restetution;
+			pDef.Friction = friction;
+			pDef.Density = density;
+			pDef.SetAsBox(model.Size.Width / 2, model.Size.Height / 2);
+			pDef.Vertices = vert;
+
+			Body body = world.CreateBody(bDef);
+			body.CreateShape(pDef);
+			body.SetMassFromShapes();
+			body.SetUserData(model);
+			return info;
+		}*/
 		// Связь основанная на дистанции жесткость которой можно регулировать
 		public Joint AddDistanceJoint(Body b1, Body b2, float x1, float y1, float x2, float y2,
 			bool collideConnected = true, float hz = 1f)
@@ -106,7 +136,7 @@ namespace Box2D_and_WPF
 		public void Step(float dt, int iterat)
 		{
 			// Параметры этого метода управляют временем мира и точностью обработки коллизий тел
-			world.Step(dt / 1000.0f, iterat, iterat);
+			world.Step( 1.0f/dt, iterat, iterat);
 
 			for (Body list = world.GetBodyList(); list != null; list = list.GetNext())
 			{
