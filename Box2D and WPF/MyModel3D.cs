@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using Box2DX.Dynamics;
 
 namespace Box2D_and_WPF
 {
@@ -14,12 +15,16 @@ namespace Box2D_and_WPF
 	{
 		public Vector3D Position { get; set; } // Позиция квадрата
 		public Size Size { get; set; } // Размер квадрата
+		
+		public string name { get; set; }
+		
 		private TranslateTransform3D translateTransform; // Матрица перемещения
 		private RotateTransform3D rotationTransform; // Матрица вращения
 		public MyModel3D(Model3DGroup models, double x, double y, double z, string path, Size size, float axis_x = 0, double angle = 0, float axis_y = 0, float axis_z = 1)
 		{
 			this.Size = size;
 			this.Position = new Vector3D(x, y, z);
+			
 			MeshGeometry3D mesh = new MeshGeometry3D();
 			// Проставляем вершины квадрату
 			mesh.Positions = new Point3DCollection(new List<Point3D>
@@ -51,13 +56,14 @@ namespace Box2D_and_WPF
 			tgroup.Children.Add(rotationTransform);
 			geometryModel.Transform = tgroup;
 		}
-		// Утсанавливает позицию объекта
+		// Устанавливает позицию объекта
 		public void SetPosition(Vector3D v3) 
 		{
 			translateTransform.OffsetX = v3.X;
 			translateTransform.OffsetY = v3.Y;
 			translateTransform.OffsetZ = v3.Z;
 		}
+
 		public Vector3D GetPosition()
 		{
 			return new Vector3D(translateTransform.OffsetX, translateTransform.OffsetY, translateTransform.OffsetZ);
